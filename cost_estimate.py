@@ -9,7 +9,16 @@ retailers). They are NOT quotes: every line has a low and a high value, and the 
 honest uncertainty. Check current prices before ordering.
 
 Run:  .venv/bin/python cost_estimate.py      (after array_model.py)
-Writes out/cost_estimate.csv and prints totals per group.
+Writes out/cost_estimate.csv (custom plates, as modelled) and out/cost_estimate_standard.csv
+(standard catalogue plates where they fit, see STANDARD below) and prints both totals.
+
+Standard-parts variant: catalogue 3030 joining plates replace the hub, mid-side tee, splice
+and leg-base plates, and DIN 71752 fork heads screwed into the tapped profile cores replace
+the custom clevis brackets. Repeatability is kept by match-drilling: at first assembly each
+standard plate is clamped in place and the dowel holes are drilled and reamed through plate
+and profile with the jig, then the plate is numbered to that position. The corner gussets
+stay custom: the 45-degree arm, both side halves, the outrigger and the leg meet there, and
+no catalogue plate takes that.
 """
 
 import csv
@@ -86,11 +95,21 @@ EXTRAS = [
 ]
 
 
-def main():
+# plate key -> (replacement, low, high EUR per plate); keys not listed stay custom
+STANDARD = {
+    "hub_top": ("Cross joining plate 3030, 4-arm (catalogue), match-drilled for dowels + mast", 6, 12),
+    "hub_bottom": ("Cross joining plate 3030, 4-arm (catalogue), match-drilled for dowels", 6, 12),
+    "midside_tee": ("T joining plate 3030 (catalogue), match-drilled for dowels", 3, 6),
+    "splice": ("Straight joining plate 3030, >=120 mm, 4 holes (catalogue), match-drilled", 2.5, 4.5),
+    "leg_base": ("Galvanised steel base plate ~120 x 120 x 6, drilled to the screw-head studs", 4, 8),
+}
+# custom clevis bracket -> fork head on the member end + catalogue bracket drilled 8.2 mm as the lug
+CLEVIS_STD = ("Fork head DIN 71752 G8x16 stainless + M8 jam nut (into the tapped profile core), "
+              "lug = 3030 corner bracket drilled 8.2 mm", 4, 8)
+
+
+def build(bom, prof, standard):
     rows_out = []
-    with open(os.path.join(OUT, "bom.csv")) as f:
-        bom = list(csv.DictReader(f))
-    prof = next((r["item"].split()[0] for r in bom if r["category"] == "profile"), "3030")
     for r in bom:
         cat, item, spec, q = r["category"], r["item"], r["spec"], r["qty"]
         if not q:
@@ -102,6 +121,13 @@ def main():
             lo = q * (L * pm[0] + CUT_FEE[0])
             hi = q * (L * pm[1] + CUT_FEE[1])
             rows_out.append(("frame", item, f"{q} x {L * 1000:.0f} mm", q, lo, hi, "incl. cutting"))
+        elif cat == "plate" and standard and item in STANDARD:
+            name, lo, hi = STANDARD[item]
+            rows_out.append(("frame", name, f"replaces custom {item}", q, q * lo, q * hi, "dowels match-drilled"))
+        elif cat == "bought" and standard and item.startswith("Clevis bracket"):
+            name, lo, hi = CLEVIS_STD
+            rows_out.append(("frame", name, "replaces custom clevis", q, q * lo, q * hi,
+                             "set length once, lock, paint-mark"))
         elif cat == "plate":
             w, h = map(float, re.search(r"envelope (\d+) x (\d+)", spec).groups())
             lo, hi = plate_price(w * h)
@@ -120,11 +146,16 @@ def main():
                 rows_out.append(("unpriced", item, spec, q, 0.0, 0.0, "NO PRICE"))
     for item, q, lo, hi, grp, com in EXTRAS:
         rows_out.append((grp, item, "", q, q * lo, q * hi, com))
+    return rows_out
 
-    order = ["frame", "fasteners", "printed", "pole", "microphones", "sensors", "electronics", "network",
-             "power", "tools", "unpriced"]
+
+ORDER = ["frame", "fasteners", "printed", "pole", "microphones", "sensors", "electronics", "network",
+         "power", "tools", "unpriced"]
+
+
+def write(rows_out, path):
+    order = ORDER
     rows_out.sort(key=lambda r: order.index(r[0]))
-    path = os.path.join(OUT, "cost_estimate.csv")
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["group", "item", "spec", "qty", "eur_low", "eur_high", "comment"])
@@ -132,13 +163,22 @@ def main():
             w.writerow([r[0], r[1], r[2], r[3], f"{r[4]:.0f}", f"{r[5]:.0f}", r[6]])
         tl, th = sum(r[4] for r in rows_out), sum(r[5] for r in rows_out)
         w.writerow(["TOTAL", "", "", "", f"{tl:.0f}", f"{th:.0f}", ""])
-    print(f"{'group':12s} {'low':>7s} {'high':>7s}  EUR")
-    for g in order:
-        rs = [r for r in rows_out if r[0] == g]
-        if rs:
-            print(f"{g:12s} {sum(r[4] for r in rs):7.0f} {sum(r[5] for r in rs):7.0f}")
-    print(f"{'TOTAL':12s} {tl:7.0f} {th:7.0f}")
-    print("written", os.path.relpath(path, HERE))
+    return {g: (sum(r[4] for r in rows_out if r[0] == g), sum(r[5] for r in rows_out if r[0] == g))
+            for g in order}, (tl, th)
+
+
+def main():
+    with open(os.path.join(OUT, "bom.csv")) as f:
+        bom = list(csv.DictReader(f))
+    prof = next((r["item"].split()[0] for r in bom if r["category"] == "profile"), "3030")
+    a, ta = write(build(bom, prof, False), os.path.join(OUT, "cost_estimate.csv"))
+    b, tb = write(build(bom, prof, True), os.path.join(OUT, "cost_estimate_standard.csv"))
+    print(f"{'EUR':12s} {'custom plates':>15s} {'standard plates':>17s}")
+    for g in ORDER:
+        if a[g] != (0, 0) or b[g] != (0, 0):
+            print(f"{g:12s} {a[g][0]:7.0f}-{a[g][1]:<7.0f} {b[g][0]:9.0f}-{b[g][1]:<7.0f}")
+    print(f"{'TOTAL':12s} {ta[0]:7.0f}-{ta[1]:<7.0f} {tb[0]:9.0f}-{tb[1]:<7.0f}")
+    print(f"saving: {ta[0] - tb[0]:.0f}-{ta[1] - tb[1]:.0f} EUR")
 
 
 if __name__ == "__main__":
