@@ -709,7 +709,7 @@ class Model:
             self.add("solar_panel", frame.moved(loc(pc, V(1, 0, 0), n_p)), C_PV)
         self.buy[f"PV panel ~200 W 12 V mono, {pw:.0f} x {plen:.0f} x {pth:.0f} mm"] += nP
         self.buy["MPPT charge controller 12 V 20 A with low-temperature charge cut-off (LiFePO4)"] += 1
-        self.buy["LiFePO4 battery 12.8 V 100 Ah (~1.3 kWh, ~3 days at 15 W), in the box"] += 1
+        self.buy["LiFePO4 battery 12.8 V 100 Ah (~1.3 kWh, ~2 days at the ~25 W system load), in the box"] += 1
         self.buy[f"PV cable 4 mm2 ~{(p.solar_gap + 3000) / 1000:.0f} m in buried/armoured conduit + MC4 + 15 A fuse"] += 1
         top_edge = panel_c0 - d_r * (plen / 2) + n_p * (pth / 2)
         bot_edge = panel_c0 + d_r * (plen / 2)
