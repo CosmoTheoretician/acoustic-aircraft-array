@@ -6,3 +6,6 @@ out/render/mesh/
 out/render/assembly.scad
 site_local.json
 out_local/
+assets/
+out/blender/*.stl
+out/blender/*_preview.jpg
