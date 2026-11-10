@@ -1,21 +1,22 @@
 {
   "description": "Acoustic array mic capsule positions (acoustic centres)",
   "frame": {
-    "origin": "centre of base square at nominal ground level",
+    "origin": "centre of base square at ground level",
     "x": "east",
     "y": "north",
     "z": "up",
     "units": "m"
   },
-  "params_hash": "2423428c08ce",
+  "params_hash": "72acc96d1e02",
   "params": {
     "square_side": 2000.0,
-    "apex_height": 1500.0,
+    "apex_rise": 1400.0,
+    "base_height": 2000.0,
     "profile": "3030",
     "max_piece": 1200.0,
-    "foot_height": 40.0,
     "plate_thk": 6.0,
     "outrigger": 450.0,
+    "outrigger_tail": 40.0,
     "end_gap_node": 70.0,
     "end_gap_outrigger": 20.0,
     "hub_gap": 20.0,
@@ -23,8 +24,9 @@
     "strut_base_inset": 45.0,
     "strut_top_drop": 60.0,
     "splice_len": 240.0,
-    "board_size": 400.0,
-    "board_thk": 8.0,
+    "knee": 500.0,
+    "screw_head_z": 40.0,
+    "level_gap": 30.0,
     "mic_d": 22.0,
     "mic_len": 195.0,
     "mic_tip_d": 12.7,
@@ -36,7 +38,6 @@
     "sleeve_flange": 2.0,
     "collar_from_tip": 140.0,
     "clamp_len": 45.0,
-    "cradle_floor": 2.0,
     "xlr_cavity": 90.0,
     "holder_floor": 6.0,
     "socket_depth": 40.0,
@@ -44,78 +45,94 @@
     "mic6": true,
     "mic6_side": "E",
     "box_size": [
-      300.0,
-      200.0,
-      150.0
+      400.0,
+      500.0,
+      250.0
     ],
-    "box_side": "S",
+    "box_corner": "SW",
+    "box_z": 1450.0,
+    "solar": true,
+    "panel_size": [
+      680.0,
+      1480.0,
+      35.0
+    ],
+    "panel_count": 2,
+    "panel_tilt": 60.0,
+    "panel_rail": 1100.0,
+    "panel_low": 450.0,
+    "solar_gap": 3000.0,
     "pole_side": "W",
-    "pole_d": 40.0,
-    "pole_len": 2000.0,
-    "post_len": 600.0
+    "pole_d": 48.3,
+    "pole_len": 4600.0,
+    "post_len": 600.0,
+    "wind_sensor": [
+      142.0,
+      160.0
+    ]
   },
   "mics": [
     {
       "id": 1,
       "name": "NE",
-      "kind": "ground",
+      "kind": "base",
       "position_m": [
         1.0,
         1.0,
-        0.094
+        2.31
       ],
       "axis": [
-        0.707107,
-        0.707107,
-        0.0
+        0.0,
+        0.0,
+        1.0
       ],
       "optional": false
     },
     {
       "id": 2,
       "name": "SE",
-      "kind": "ground",
+      "kind": "base",
       "position_m": [
         1.0,
         -1.0,
-        0.094
+        2.31
       ],
       "axis": [
-        0.707107,
-        -0.707107,
-        0.0
+        0.0,
+        0.0,
+        1.0
       ],
       "optional": false
     },
     {
       "id": 3,
       "name": "SW",
-      "kind": "ground",
+      "kind": "base",
       "position_m": [
         -1.0,
         -1.0,
-        0.094
+        2.31
       ],
       "axis": [
-        -0.707107,
-        -0.707107,
-        0.0
+        0.0,
+        0.0,
+        1.0
       ],
       "optional": false
     },
     {
       "id": 4,
       "name": "NW",
-      "kind": "ground",
+      "kind": "base",
       "position_m": [
         -1.0,
         1.0,
-        0.094
+        2.31
       ],
       "axis": [
-        -0.707107,
-        0.707107,
-        0.0
+        0.0,
+        0.0,
+        1.0
       ],
       "optional": false
     },
@@ -126,7 +143,7 @@
       "position_m": [
         0.0,
         0.0,
-        1.5
+        3.71
       ],
       "axis": [
         0.0,
@@ -138,21 +155,22 @@
     {
       "id": 6,
       "name": "MID_E",
-      "kind": "ground",
+      "kind": "base",
       "position_m": [
         1.1318,
         0.0,
-        0.094
+        2.31
       ],
       "axis": [
-        1.0,
         0.0,
-        0.0
+        0.0,
+        1.0
       ],
       "optional": true
     }
   ],
   "notes": [
-    "Positions are nominal design values. Survey the built array and/or self-calibrate against ADS-B: 1 cm of position error = 29 us of timing error."
+    "Positions are nominal design values. Survey the built array and/or self-calibrate against ADS-B: 1 cm of position error = 29 us of timing error.",
+    "z is above the ground under the array; the ground acts as the reflecting plane."
   ]
 }

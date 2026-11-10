@@ -95,14 +95,14 @@ def main():
     band = (EL >= np.radians(2)) & (EL <= np.radians(30))  # where approaching aircraft are
 
     sides = [1500.0, 2000.0, 3000.0]
-    heights = [1000.0, 1500.0, 2500.0]
+    heights = [1000.0, 1400.0, 2000.0]  # apex rise above the base mics
     rows = []
     fig, axs = plt.subplots(len(heights), len(sides), subplot_kw=dict(projection="polar"),
                             figsize=(13, 13), constrained_layout=True)
     norm = LogNorm(vmin=0.08, vmax=0.5)
     for i, H in enumerate(heights):
         for j, L in enumerate(sides):
-            p = replace(AP.DEFAULT, square_side=L, apex_height=H, mic6=args.mic6)
+            p = replace(AP.DEFAULT, square_side=L, apex_rise=H, mic6=args.mic6)
             mics = AP.mic_array_m(p, include_optional=args.mic6)
             ang, s_az, s_el = crlb(mics, AZ, EL, sig)
             angd = np.degrees(ang)
@@ -115,9 +115,9 @@ def main():
             ax.set_yticks([30, 60, 80])
             ax.set_yticklabels(["60°", "30°", "10°"], fontsize=7)
             ax.tick_params(labelsize=7)
-            ax.set_title(f"square {L / 1000:.1f} m, apex {H / 1000:.1f} m\n"
+            ax.set_title(f"square {L / 1000:.1f} m, apex rise {H / 1000:.1f} m\n"
                          f"median {np.median(angd[band]):.2f}°  (el 2-30°)", fontsize=9)
-            rows.append(dict(square_m=L / 1000, apex_m=H / 1000,
+            rows.append(dict(square_m=L / 1000, apex_rise_m=H / 1000,
                              band_median_deg=np.median(angd[band]), band_p95_deg=np.percentile(angd[band], 95),
                              band_az_median_deg=np.median(np.degrees(s_az * np.cos(EL))[band]),
                              band_el_median_deg=np.median(np.degrees(s_el)[band]),
@@ -132,11 +132,11 @@ def main():
     fig, ax = plt.subplots(1, 2, figsize=(12, 4.5), constrained_layout=True)
     for H in heights:
         for L in sides:
-            p = replace(AP.DEFAULT, square_side=L, apex_height=H, mic6=args.mic6)
+            p = replace(AP.DEFAULT, square_side=L, apex_rise=H, mic6=args.mic6)
             mics = AP.mic_array_m(p, include_optional=args.mic6)
             ang, s_az, s_el = crlb(mics, AZ, EL, sig)
             ls = {1500.0: ":", 2000.0: "-", 3000.0: "--"}[L]
-            col = {1000.0: "C0", 1500.0: "C1", 2500.0: "C2"}[H]
+            col = {1000.0: "C0", 1400.0: "C1", 2000.0: "C2"}[H]
             ax[0].plot(np.degrees(el), np.degrees(np.median(s_el, 1)), ls, color=col,
                        label=f"{L / 1000:.1f} m / {H / 1000:.1f} m")
             ax[1].plot(np.degrees(el), np.degrees(np.median(s_az * np.cos(EL), 1)), ls, color=col)
@@ -148,7 +148,7 @@ def main():
         a.set_title(t)
         a.axvspan(2, 30, color="0.9", zorder=0)
         a.grid(True, which="both", alpha=0.3)
-    ax[0].legend(title="square / apex", fontsize=8)
+    ax[0].legend(title="square / apex rise", fontsize=8)
     fig.savefig(os.path.join(OUT, "doa_vs_elevation.png"), dpi=110)
     plt.close(fig)
 
@@ -160,7 +160,7 @@ def main():
     print(f"{'square':>6} {'apex':>5} | {'median':>7} {'p95':>6} {'az*cos':>7} {'el':>6} | {'freeC':>6} | "
           f"{'x-trk 3km':>9} {'5km':>6}")
     for r in rows:
-        print(f"{r['square_m']:6.1f} {r['apex_m']:5.1f} | {r['band_median_deg']:7.3f} {r['band_p95_deg']:6.3f} "
+        print(f"{r['square_m']:6.1f} {r['apex_rise_m']:5.1f} | {r['band_median_deg']:7.3f} {r['band_p95_deg']:6.3f} "
               f"{r['band_az_median_deg']:7.3f} {r['band_el_median_deg']:6.3f} | {r['free_c_band_median_deg']:6.3f} | "
               f"{r['xtrack_3km_m']:8.1f}m {r['xtrack_5km_m']:5.1f}m")
 
@@ -171,8 +171,9 @@ def main():
     u, _, _ = unit_vectors(azc.ravel(), elc.ravel())
     # (1) plane-wave assumption at 1 km
     biases = []
+    ctr = mics.mean(0)  # the array is elevated: compare with the direction seen from its centroid
     for uu in u:
-        src = uu * 1000.0
+        src = ctr + uu * 1000.0
         tau = np.linalg.norm(mics - src, axis=1) / C
         biases.append(angle_between(fit_plane_wave(mics, tau), uu))
     print(f"\nplane-wave model bias at 1 km: max {max(biases):.4f} deg  (negligible -> far-field OK)")

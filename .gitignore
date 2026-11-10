@@ -4,3 +4,5 @@ __pycache__/
 .DS_Store
 out/render/mesh/
 out/render/assembly.scad
+site_local.json
+out_local/
