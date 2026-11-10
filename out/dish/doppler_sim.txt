@@ -1,0 +1,25 @@
+=== One-way S-band Doppler: example site (6 km out, 1.5 km SE of centreline), 2210.6 MHz ===
+lander (Reiner Gamma): range 360778-373338 km; visible (el > 10 deg) 57 % of the time; Doppler -1790 .. +2114 Hz; rate up to 0.140 Hz/s
+100 km polar orbiter: Doppler -11051 .. +13949 Hz, rate up to 10.8 Hz/s; occulted 39 % of the visible time
+
+frequency estimator check (300 s of simulated carrier, 1-s FFT estimates):
+  carrier C/N0   20 dB-Hz: measured    8.54 mm/s, CRLB    7.48 mm/s per 1-s point
+  carrier C/N0   26 dB-Hz: measured    4.04 mm/s, CRLB    3.75 mm/s per 1-s point
+  carrier C/N0   41 dB-Hz: measured    0.74 mm/s, CRLB    0.67 mm/s per 1-s point
+  carrier C/N0   56 dB-Hz: measured    0.13 mm/s, CRLB    0.12 mm/s per 1-s point
+
+error budget: one pass above 20 deg elevation, 12.4 h of 1-s points, starting 2027-03-15 11:30 UTC
+scenario                                           1-s rms  60-s rms drift-free sys.   (mm/s, after bias + drift fit)
+baseline: LGA upright, OCXO GPSDO 1e-11, s/c TCXO     30.41      6.72           0.007
+lander tipped (carrier 26 dB-Hz)                     30.49      5.03           0.017
+high-gain antenna (carrier 56 dB-Hz)                 30.45      5.45           0.011
+s/c OCXO-class oscillator                             3.09      0.50           0.013
+s/c coherent with an IM ground uplink                 3.05      0.42           0.011
+s/c coherent + premium GPSDO 2e-12                    0.89      0.14           0.016
+cheap GPSDO (1e-10 at 1 s)                           42.70      6.78           0.013
+coherent + premium, station from handheld GPS 5 m      0.88      0.13           0.034
+coherent + premium, landing site known to 1 km        0.89      0.12           0.032
+coherent + premium, no troposphere/iono model         0.89      0.16           0.095
+  ('drift-free sys.' = ephemeris / station / lander / troposphere / ionosphere model errors only)
+  gravitational redshift + 2nd-order Doppler: 0.20 m/s, nearly constant -> absorbed by the bias
+  one-way Doppler measures range-rate up to an unknown bias + drift per pass; with the lander's own oscillator the pass-long wander dominates unless the link is coherent with an IM uplink

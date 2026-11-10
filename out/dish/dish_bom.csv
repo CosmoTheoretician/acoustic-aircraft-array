@@ -1,0 +1,32 @@
+item,qty,eur_low,eur_high,note
+"Slewing drive SE9 (worm, self-locking, IP65), azimuth",1,500,900,UNVERIFIED ratings in dish_params.DRIVES
+"Slewing drive SE7 (worm, self-locking, IP65), elevation",1,350,650,
+"Integrated 48 V servo 400 W with encoder + driver, IP65",2,500,900,
+Planetary gearbox 50:1 (servo flange to worm shaft adapter),2,240,500,
+"Absolute encoder 17-bit, IP67, on each drive output (belt 1:1)",2,300,700,reads the output: backlash and worm wear don't affect pointing knowledge
+Limit switches (2 per axis) + hardware E-stop + brake resistor,1,60,150,
+"Pedestal tube 219.1 x 6.3 S355, 1.17 m, with base plate 400x400x25, top flange, 4 gussets, hot-dip galvanised",1,350,700,fabricated
+Concrete C25/30 1.69 m3 + rebar cage + 4 x M20 8.8 HDG anchors with template,1,300,550,frost-proof depth
+"Yoke: upright 340x20 S355 + 2 gussets + turntable 400x20, laser-cut, galvanised",1,300,600,
+"Electronics enclosure 400x500x220 IP66 on the yoke, vent + glands",1,100,200,
+"Cable wrap / drag chain for +-270 deg azimuth (48 V, Ethernet, E-stop loop)",1,80,150,
+"Aluminium mesh reflector kit 3.5 m, f/D 0.4, 24 ribs, hub, mesh <= 6 mm",1,2500,5000,get a quote; check 3.5 m is offered
+"El cradle: output plate, beam 100x100x5, hub plate, posts, cw arm 80x80x4, galvanised",1,200,400,
+"Counterweight: steel plates 240x340, 77 kg total (~121 mm stack), trim on site",1,80,150,balance with feed fitted
+"Quadripod: 4 x Al tube 30x2, 2.0 m, end fittings to ribs; fixed feed plate 220x220x10",1,120,250,
+Quick-swap feed plates (one per feed) with 2 x 6 mm dowels + 4 x M6 thumb bolts,2,40,100,
+"S-band dual-CP septum feed for f/D 0.4, 2.2-2.3 GHz",1,250,600,or DIY
+"L-band 1420 MHz circular waveguide feed with choke, f/D 0.4",1,100,300,DIY feasible
+"S-band LNA 0.5 dB NF, 30 dB, 2.2-2.3 GHz",2,200,500,one per CP port
+S-band cavity band-pass filter 2.2-2.3 GHz (rejects 2.4 GHz Wi-Fi),2,120,300,after the LNA
+L-band LNA + 1420 MHz filter (hydrogen line),1,40,90,
+Switched noise source for calibration (+ coupler),1,60,150,
+"2-channel coherent SDR, 70 MHz-6 GHz, ext. 10 MHz + PPS (USRP B210 class)",1,1500,2300,
+"GPSDO with OCXO: 10 MHz + PPS, ADEV <= 1e-11 at 1 s",1,250,600,the receiver's frequency reference: the core of the Doppler accuracy
+"GPS antenna (active, timing grade)",1,20,60,
+Computer at the dish (Pi 5 8 GB / mini PC) + NVMe for raw IQ,1,150,300,
+"Coax LMR-240 feed->box 2 x 4 m, connectors, lightning arrestors",1,80,150,
+DC-DC 12 V -> 48 V 600 W at the battery + 48 V buried cable,1,150,300,
+5 GHz bridge pair (e.g. TP-Link CPE510) replacing the CPE210,1,90,130,
+"Earth rod + 16 mm2 bonding of pedestal, yoke and coax shields",1,40,80,
+TOTAL,,9070,17760,"rough EUR estimates incl. VAT, not quotes"

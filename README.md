@@ -166,3 +166,58 @@ All errors are medians.
 - **T-nut count is slightly high:** the BOM counts T-nuts for every plate hole, including unused optional positions.
 - **The simulation leaves out** turbulence-induced decorrelation between mics, frequency-dependent ground impedance, and refraction from wind and temperature gradients.
 - **Solar sizing** is for spring to autumn only. Winter yield at a 60° tilt is too low for continuous operation.
+
+## Dish extension (phase 1): 3.5 m S/L-band tracker
+
+This is a receive-only 3.5 m aluminium mesh dish on an az-el servo positioner. Pointing commands reach it over the (now 5 GHz) Wi-Fi bridge. It has two jobs:
+
+- **Doppler velocimetry** of lunar spacecraft at S-band. The main target is Intuitive Machines IM-3; LRO is the rehearsal target.
+- **Radio astronomy** at L-band: the 21 cm hydrogen line, the Sun, bright continuum sources and pulsars.
+
+It runs on the existing solar/battery supply, and the acoustic rig is switched off while it tracks.
+
+| File | Output | What it does |
+|---|---|---|
+| `dish_params.py` | | All dish parameters, drive catalogue data, derived geometry and mass balance |
+| `dish_analysis.py` | `out/dish/dish_analysis.txt` | Link budgets (S and L), wind loads (EN 1991-1-4), drive and servo checks, foundation, power |
+| `doppler_sim.py` | `out/dish/doppler_sim.{png,txt}` | Lander and orbiter Doppler profiles from Earth–Moon geometry (astropy, IAU lunar rotation), an I/Q estimator checked against the CRLB, and an error budget for oscillators, station position, troposphere and ionosphere |
+| `dish_model.py` | `out/dish/dish_assembly.step`, `dish_bom.csv`, `render/` | CadQuery model of the positioner, pedestal, counterweight, quadripod and quick-swap feeds; collision sweep over el 0–90°; BOM with cost |
+
+```bash
+.venv/bin/python dish_analysis.py
+.venv/bin/python doppler_sim.py                      # built-in example site
+.venv/bin/python doppler_sim.py --site my_site.json  # results go to out_local/dish
+.venv/bin/python dish_model.py                       # ~3 min, renders need openscad
+```
+
+**Phase 1 results (default parameters)**
+
+- **RF:**
+  - S-band (2210.6 MHz): G 35.0 dBi, beamwidth 2.7°, Tsys ≈ 81 K, G/T 15.9 dB/K.
+  - IM-3 low-gain antenna, lander upright (IM-1 radio data): carrier 41 dB-Hz, 0.65 mm/s Doppler noise per 1-s point.
+  - Lander tipped over (−15 dB): carrier 26 dB-Hz. Doppler still works, but the telemetry cannot be decoded.
+- **Doppler accuracy:**
+  - Statistical noise is not the limit; the spacecraft oscillator is. A one-way TCXO-class lander gives ~6.7 mm/s over 60 s.
+  - An OCXO gives ~0.5 mm/s.
+  - A coherent (ground-uplinked) carrier with a premium GPSDO gives ~0.14 mm/s.
+  - Model errors from troposphere, ionosphere, station position and landing-site position are ≤ 0.1 mm/s after the per-pass bias + drift fit.
+- **L-band:** G 31.5 dBi, beamwidth 4.2°, 1.8 mK/Jy. Hydrogen-line spectra reach SNR > 200 on the galactic plane in 1 min. PSR B0329+54 is detectable (SNR ~16 in 30 min) if the band is clean.
+- **Mechanics:**
+  - The el axis sits 500 mm behind the vertex, and a 77 kg counterweight at 600 mm balances the 55 kg dish + feed.
+  - Moving mass is 132 kg.
+  - The rim stays ≥ 550 mm above ground. The collision sweep shows no overlap at az 0° and 90° over el 0–90°.
+- **Drives (SE9 azimuth, SE7 elevation; catalogue values UNVERIFIED):**
+  - Operating wind (12 m/s) uses 10 % / 45 % of rated output torque.
+  - The 400 W servos run at ≤ 54 % of rated torque through 50:1 planetary gearboxes.
+- **Foundation:** 1.3 × 1.3 × 1.0 m concrete, FoS 2.4 against overturning in the "stow failed, face-on at the survival gust" case, 4 × M20 anchors.
+- **Power:** ~28 W while tracking, ~0.43 kWh/day.
+- **Cost:** €9,070–17,760. The reflector kit and the SDR dominate.
+
+**Dish assumptions and open items**
+
+- **Slewing drive data** (SE7/SE9 torque, tilt moment, mass, size) are typical catalogue figures and are UNVERIFIED. Check them against the actual supplier's datasheet.
+- **Mesh kit:** confirm that a 3.5 m kit is available at f/D 0.4, and check its mass, surface RMS (4 mm assumed) and price. The counterweight is trimmed on site with the feed fitted.
+- **IM-3 radio:** frequencies, EIRP and modulation are taken from IM-1 filings. Replace them with the IM-3 FCC/ITU filing values when published. The LRO EIRP is an assumption; calibrate it on the first pass.
+- **Wind:** vb0 = 26 m/s and terrain category III are placeholders. Use the national annex and the real site exposure.
+- **Approvals:** a 3.5 m dish on a 2.3 m pedestal may need a building permit. Check soil bearing and frost depth before pouring.
+- **Station coordinates** must be surveyed to cm level for Doppler work. Keep them in your git-ignored site file.

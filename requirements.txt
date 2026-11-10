@@ -2,3 +2,4 @@ cadquery>=2.4
 numpy
 scipy
 matplotlib
+astropy>=6.0
