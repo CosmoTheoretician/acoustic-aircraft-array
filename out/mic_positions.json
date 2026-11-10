@@ -1,0 +1,158 @@
+{
+  "description": "Acoustic array mic capsule positions (acoustic centres)",
+  "frame": {
+    "origin": "centre of base square at nominal ground level",
+    "x": "east",
+    "y": "north",
+    "z": "up",
+    "units": "m"
+  },
+  "params_hash": "2423428c08ce",
+  "params": {
+    "square_side": 2000.0,
+    "apex_height": 1500.0,
+    "profile": "3030",
+    "max_piece": 1200.0,
+    "foot_height": 40.0,
+    "plate_thk": 6.0,
+    "outrigger": 450.0,
+    "end_gap_node": 70.0,
+    "end_gap_outrigger": 20.0,
+    "hub_gap": 20.0,
+    "pin_offset": 32.0,
+    "strut_base_inset": 45.0,
+    "strut_top_drop": 60.0,
+    "splice_len": 240.0,
+    "board_size": 400.0,
+    "board_thk": 8.0,
+    "mic_d": 22.0,
+    "mic_len": 195.0,
+    "mic_tip_d": 12.7,
+    "mic_nose_len": 45.0,
+    "ac_from_tip": 3.0,
+    "xlr_plug_len": 55.0,
+    "cable_d": 6.5,
+    "iso_thk": 3.0,
+    "sleeve_flange": 2.0,
+    "collar_from_tip": 140.0,
+    "clamp_len": 45.0,
+    "cradle_floor": 2.0,
+    "xlr_cavity": 90.0,
+    "holder_floor": 6.0,
+    "socket_depth": 40.0,
+    "windscreen_d": 90.0,
+    "mic6": true,
+    "mic6_side": "E",
+    "box_size": [
+      300.0,
+      200.0,
+      150.0
+    ],
+    "box_side": "S",
+    "pole_side": "W",
+    "pole_d": 40.0,
+    "pole_len": 2000.0,
+    "post_len": 600.0
+  },
+  "mics": [
+    {
+      "id": 1,
+      "name": "NE",
+      "kind": "ground",
+      "position_m": [
+        1.0,
+        1.0,
+        0.094
+      ],
+      "axis": [
+        0.707107,
+        0.707107,
+        0.0
+      ],
+      "optional": false
+    },
+    {
+      "id": 2,
+      "name": "SE",
+      "kind": "ground",
+      "position_m": [
+        1.0,
+        -1.0,
+        0.094
+      ],
+      "axis": [
+        0.707107,
+        -0.707107,
+        0.0
+      ],
+      "optional": false
+    },
+    {
+      "id": 3,
+      "name": "SW",
+      "kind": "ground",
+      "position_m": [
+        -1.0,
+        -1.0,
+        0.094
+      ],
+      "axis": [
+        -0.707107,
+        -0.707107,
+        0.0
+      ],
+      "optional": false
+    },
+    {
+      "id": 4,
+      "name": "NW",
+      "kind": "ground",
+      "position_m": [
+        -1.0,
+        1.0,
+        0.094
+      ],
+      "axis": [
+        -0.707107,
+        0.707107,
+        0.0
+      ],
+      "optional": false
+    },
+    {
+      "id": 5,
+      "name": "APEX",
+      "kind": "apex",
+      "position_m": [
+        0.0,
+        0.0,
+        1.5
+      ],
+      "axis": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "optional": false
+    },
+    {
+      "id": 6,
+      "name": "MID_E",
+      "kind": "ground",
+      "position_m": [
+        1.1318,
+        0.0,
+        0.094
+      ],
+      "axis": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "optional": true
+    }
+  ],
+  "notes": [
+    "Positions are nominal design values. Survey the built array and/or self-calibrate against ADS-B: 1 cm of position error = 29 us of timing error."
+  ]
+}

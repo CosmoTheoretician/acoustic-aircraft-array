@@ -1,0 +1,12 @@
+
+=== crosswind5: square 2.0 m, apex 1.5 m, wind (0.0, 5.0) m/s, 228 frames ===
+  range km    n   el deg  SNR dB |  max-peak med/p95 | echo-comp med/p95 | no retard. corr
+   0-1       51     14.3    34.0 |    0.66 /   0.81° |    0.61 /   0.78° |         8.31°
+   1-2       36      8.1    27.8 |    0.81 /   0.88° |    0.80 /   0.82° |         4.10°
+   2-3       23      6.6    22.1 |    0.86 /   0.87° |    0.83 /   0.83° |         2.67°
+   3-5       46      5.2    18.0 |    0.85 /   0.88° |    0.83 /   0.84° |         1.67°
+   5-8       68      4.4    13.8 |    0.85 /   0.88° |    0.84 /   0.85° |         1.03°
+   8-20       4      4.1    11.9 |    0.84 /   0.85° |    0.84 /   0.85° |         0.82°
+glide-path range estimate (ray/glide-path angle > 11.5 deg, 90 frames): median error 24 m (2.9 % of range)
+  ...poorly conditioned in 138 frames (ray nearly parallel to the glide path), median error 662 m
+plot: /Users/iiiiiiiiiiiiiii/Library/Application Support/Claude/scratch-workspaces/14c7bcd6-bc2d-4418-8666-0f0032ddf168/4a19313e-fc25-4bfb-b91a-c6db601d8883/scratch-2026-11-10-251ad4/out/analysis/tracking_crosswind5.png

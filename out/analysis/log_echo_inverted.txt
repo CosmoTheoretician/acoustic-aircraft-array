@@ -1,0 +1,12 @@
+
+=== echo_inverted: square 2.0 m, apex 1.5 m, wind (0.0, 0.0) m/s, 228 frames ===
+  range km    n   el deg  SNR dB |  max-peak med/p95 | echo-comp med/p95 | no retard. corr
+   0-1       51     14.3    34.0 |    0.16 /   0.25° |    0.05 /   0.10° |         8.31°
+   1-2       36      8.1    27.8 |    0.19 /   0.38° |    0.02 /   0.09° |         4.10°
+   2-3       23      6.6    22.1 |    0.13 /   0.23° |    0.02 /   0.09° |         2.67°
+   3-5       46      5.2    18.0 |    0.24 /   0.33° |    0.02 /   0.06° |         1.67°
+   5-8       68      4.4    13.8 |    0.31 /   0.35° |    0.02 /   0.04° |         1.03°
+   8-20       4      4.1    11.9 |    0.20 /   0.20° |    0.01 /   0.04° |         0.82°
+glide-path range estimate (ray/glide-path angle > 11.5 deg, 93 frames): median error 46 m (5.0 % of range)
+  ...poorly conditioned in 135 frames (ray nearly parallel to the glide path), median error 256 m
+plot: /Users/iiiiiiiiiiiiiii/Library/Application Support/Claude/scratch-workspaces/14c7bcd6-bc2d-4418-8666-0f0032ddf168/4a19313e-fc25-4bfb-b91a-c6db601d8883/scratch-2026-11-10-251ad4/out/analysis/tracking_echo_inverted.png
