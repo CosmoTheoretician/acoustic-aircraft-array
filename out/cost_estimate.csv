@@ -3,9 +3,9 @@ frame,3030 extrusion — arm,4 x 874 mm,4,28,43,incl. cutting
 frame,3030 extrusion — outrigger,4 x 470 mm,4,16,25,incl. cutting
 frame,3030 extrusion — side_half,8 x 610 mm,8,41,63,incl. cutting
 frame,3030 extrusion — leg,8 x 958 mm,8,61,94,incl. cutting
-frame,3030 extrusion — knee_brace,8 x 686 mm,8,45,70,incl. cutting
-frame,3030 extrusion — strut_A,4 x 798 mm,4,26,40,incl. cutting
-frame,3030 extrusion — strut_B,4 x 777 mm,4,25,39,incl. cutting
+frame,3030 extrusion — knee_brace,8 x 576 mm,8,39,60,incl. cutting
+frame,3030 extrusion — strut_A,4 x 743 mm,4,24,37,incl. cutting
+frame,3030 extrusion — strut_B,4 x 722 mm,4,24,37,incl. cutting
 frame,3030 extrusion — mast,2 x 696 mm,2,11,18,incl. cutting
 frame,3030 extrusion — outrigger,1 x 470 mm,1,4,6,incl. cutting
 frame,3030 extrusion — solar_rail,2 x 1100 mm,2,18,27,incl. cutting
@@ -18,18 +18,19 @@ frame,3030 extrusion — solar_back_diagonal,2 x 699 mm,2,11,18,incl. cutting
 frame,3030 extrusion — solar_cross_rail,4 x 689 mm,4,23,35,incl. cutting
 frame,3030 extrusion — pole_stub,1 x 250 mm,1,2,4,incl. cutting
 frame,3030 extrusion — pole_post,1 x 600 mm,1,5,8,incl. cutting
-frame,"Plate hub_top (6 mm Al, laser/waterjet)",envelope 250 x 250 mm,1,25,44,reamed dowel holes DIY
-frame,"Plate hub_bottom (6 mm Al, laser/waterjet)",envelope 250 x 250 mm,1,25,44,reamed dowel holes DIY
+frame,"Cross joining plate 3030, 4-arm (catalogue), match-drilled for dowels + mast [hub_top]",catalogue cross joining plate 3030,1,6,12,dowels match-drilled
+frame,"Cross joining plate 3030, 4-arm (catalogue), match-drilled for dowels [hub_bottom]",catalogue cross joining plate 3030,1,6,12,dowels match-drilled
 frame,"Plate corner_gusset (6 mm Al, laser/waterjet)",envelope 273 x 273 mm,8,233,406,reamed dowel holes DIY
-frame,"Plate splice (6 mm Al, laser/waterjet)",envelope 240 x 30 mm,28,155,289,reamed dowel holes DIY
-frame,"Plate leg_base (6 mm Al, laser/waterjet)",envelope 140 x 140 mm,8,79,142,reamed dowel holes DIY
-frame,"Plate midside_tee (6 mm Al, laser/waterjet)",envelope 125 x 233 mm,8,106,188,reamed dowel holes DIY
+frame,"Straight joining plate 3030, >=120 mm, 4 holes (catalogue), match-drilled [splice]",catalogue straight joining plate 3030,28,70,126,dowels match-drilled
+frame,"Galvanised steel base plate ~120 x 120 x 6, drilled to the screw-head studs [leg_base]",galvanised steel flat plate (S235),8,32,64,dowels match-drilled
+frame,"T joining plate 3030 (catalogue), match-drilled for dowels [midside_tee]",catalogue T joining plate 3030,8,24,48,dowels match-drilled
 frame,Corner bracket 3030 (28x28 cast),,34,27,61,"cast Zn/Al, 28x28"
 frame,"Ground screw 76 x 650 mm with 140 x 140 mm head plate, galvanised",,8,144,240,"galvanised, 650 mm"
-frame,"Clevis bracket for 3030, 8 mm pin (custom bent 4 mm stainless or Al, see model)",,24,120,288,laser-cut + bent 4 mm stainless (custom)
+frame,"Al T-section 50x50x5 stock, 60 mm pieces (web trimmed to 18 mm, 8.2 mm pin hole at 32 mm, 2 x 6.6 + 1 dowel hole) — pin lug",,24,24,48,cut from ~1.5 m of stock
+frame,"Fork head DIN 71752 G8x16, stainless (A4) (pin: see clevis pins)",,24,72,144,stainless G8x16
 frame,Al plate 540 x 440 x 4 mm (box mounting plate on leg),,1,15,30,
 frame,"Ground screw 76 x 650 mm with 48.3 mm pole sleeve + clamp bolt, galvanised",,1,25,40,
-fasteners,"Clevis pin 8 x 50 mm DIN 1444, A4 + R-clip",,26,26,53,
+fasteners,"Clevis pin 8 x 24 mm DIN 1444, A4 + R-clip",,26,26,53,
 fasteners,"Dowel pin 6 m6 x 20 ISO 8734, stainless 1.4305",,160,40,80,
 fasteners,M10 threaded rod 90 mm A4 + 3 nuts + 2 washers (levelling stud),,35,42,77,per stud set
 fasteners,"M3x16 socket head + M3 nut, A4 (collar)",,7,1,2,
@@ -37,17 +38,19 @@ fasteners,"M4x30 socket head + M4 nyloc, A4 (holder clamp)",,7,1,3,
 fasteners,M5x16 + washer A4 (box to plate),,4,1,1,
 fasteners,"M6 nyloc nut DIN 985, A4",,53,4,8,
 fasteners,"M6 washer DIN 125, A4",,53,2,3,
-fasteners,"M6x12 button head ISO 7380, A4 stainless",,367,44,92,
+fasteners,"M6x12 button head ISO 7380, A4 stainless",,363,44,91,
 fasteners,"M6x20 button head ISO 7380, A4 stainless",,53,6,13,
 fasteners,"M6x25 button head ISO 7380, A4 stainless",,6,1,1,
 fasteners,M6x50 + nyloc A4 (solar diagonal),,4,2,3,
+fasteners,"M8 jam nut DIN 439, A4",,26,2,5,
 fasteners,"M8x16 socket head ISO 4762, A4 + washer (apex holder -> mast)",,1,0,1,
 fasteners,"M8x16 socket head ISO 4762, A4 + washer (leg -> gusset / base plate)",,9,2,4,
 fasteners,"M8x16 socket head ISO 4762, A4 + washer (mast -> hub)",,1,0,1,
 fasteners,"M8x16 socket head ISO 4762, A4 + washer (post -> stub)",,1,0,1,
 fasteners,"M8x16 socket head ISO 4762, A4 + washer (solar post -> base plate)",,4,1,2,
+fasteners,Nylon washer 8.4 x 16 x 1.5 (fork-head spacer),,53,3,6,
 fasteners,"PV mid/end clamp 35 mm frame, aluminium + M8 T-bolt",,7,16,33,
-fasteners,"T-nut M6 for slot 8 (hammer or drop-in), A2/A4 stainless",,373,112,224,stainless hammer nuts
+fasteners,"T-nut M6 for slot 8 (hammer or drop-in), A2/A4 stainless",,369,111,221,stainless hammer nuts
 printed,mic_holder_flange,"ASA, 5 walls, 50 % infill, print flange-down",5,8,15,filament only
 printed,iso_sleeve_tpu,TPU 85A-95A (or cut from EPDM tube 22x28 mm),6,3,9,filament only
 printed,index_collar,ASA or PETG,6,9,18,filament only
@@ -79,4 +82,4 @@ power,"Armoured / steel-braided cable conduit, marten-proof (all cables, legs to
 power,"Box internals: DIN rail, fuses, terminals, DC-DC 12->24 V passive PoE",,1,40,80,
 tools,"Reamers 6 H7 (dowels) + 8 H8 (pins), M8 tap, drill-jig bushings",,1,50,100,DIY machining
 tools,Core tapping of profile ends (if done by the extrusion shop),,30,30,60,or DIY with the tap
-TOTAL,,,,3747,7735,
+TOTAL,,,,3465,7188,

@@ -37,7 +37,10 @@ class Params:
     # ---- Frame ----
     profile: str = "3030"  # "3030" or "4040" (see PROFILES below)
     max_piece: float = 1200.0  # longest single profile; longer members are spliced
-    plate_thk: float = 6.0  # gusset / hub / splice plates (aluminium 5083 or 6082)
+    plate_thk: float = 6.0  # gusset / hub / splice plates; set to the thickness of the plates you buy
+    plates: str = "standard"  # "standard": catalogue joining plates + DIN 71752 fork heads, dowel holes
+    #                           match-drilled at first assembly; "custom": laser-cut plates + bent clevises
+    fork_pin_to_end: float = 40.0  # DIN 71752 G8x16: pin centre -> rear face (32) + M8 jam nut
     outrigger: float = 450.0  # corner node -> base mic, along the diagonal
     outrigger_tail: float = 40.0  # outrigger continues this far past the mic
     end_gap_node: float = 70.0  # arm / side profile ends stop this far from a node centre
@@ -135,6 +138,8 @@ class Geometry:
 
 def derive(p: Params) -> Geometry:
     g = Geometry(p=p)
+    if p.plates not in ("standard", "custom"):
+        raise ValueError('plates must be "standard" or "custom"')
     if p.profile not in PROFILES:
         raise ValueError(f"profile must be one of {list(PROFILES)}")
     g.prof = PROFILES[p.profile]

@@ -9,16 +9,9 @@ retailers). They are NOT quotes: every line has a low and a high value, and the 
 honest uncertainty. Check current prices before ordering.
 
 Run:  .venv/bin/python cost_estimate.py      (after array_model.py)
-Writes out/cost_estimate.csv (custom plates, as modelled) and out/cost_estimate_standard.csv
-(standard catalogue plates where they fit, see STANDARD below) and prints both totals.
-
-Standard-parts variant: catalogue 3030 joining plates replace the hub, mid-side tee, splice
-and leg-base plates, and DIN 71752 fork heads screwed into the tapped profile cores replace
-the custom clevis brackets. Repeatability is kept by match-drilling: at first assembly each
-standard plate is clamped in place and the dowel holes are drilled and reamed through plate
-and profile with the jig, then the plate is numbered to that position. The corner gussets
-stay custom: the 45-degree arm, both side halves, the outrigger and the leg meet there, and
-no catalogue plate takes that.
+Writes out/cost_estimate.csv and prints totals per group. Prices whatever the model built:
+with Params.plates = "standard" (default) the catalogue joining plates, fork heads and T-section
+lugs; with "custom" the laser-cut plates and bent clevises.
 """
 
 import csv
@@ -44,6 +37,10 @@ PRICES = [
     (r"^Ground screw .*head plate", (18, 30), "frame", "galvanised, 650 mm"),
     (r"^Ground screw .*pole sleeve", (25, 40), "frame", ""),
     (r"^Clevis bracket", (5, 12), "frame", "laser-cut + bent 4 mm stainless (custom)"),
+    (r"^Fork head DIN 71752", (3, 6), "frame", "stainless G8x16"),
+    (r"^Al T-section 50x50x5", (1, 2), "frame", "cut from ~1.5 m of stock"),
+    (r"^M8 jam nut", (0.08, 0.20), "fasteners", ""),
+    (r"^Nylon washer", (0.05, 0.12), "fasteners", ""),
     (r"^Al plate .*box mounting", (15, 30), "frame", ""),
     (r"^Weatherproof enclosure", (80, 160), "power", "polycarbonate IP66 (Fibox/Spelsberg class)"),
     (r"^PV panel", (80, 130), "power", "200 W mono"),
@@ -95,20 +92,17 @@ EXTRAS = [
 ]
 
 
-# plate key -> (replacement, low, high EUR per plate); keys not listed stay custom
+# catalogue plates (plates = "standard"): key -> (description, low, high EUR per plate)
 STANDARD = {
     "hub_top": ("Cross joining plate 3030, 4-arm (catalogue), match-drilled for dowels + mast", 6, 12),
     "hub_bottom": ("Cross joining plate 3030, 4-arm (catalogue), match-drilled for dowels", 6, 12),
     "midside_tee": ("T joining plate 3030 (catalogue), match-drilled for dowels", 3, 6),
     "splice": ("Straight joining plate 3030, >=120 mm, 4 holes (catalogue), match-drilled", 2.5, 4.5),
-    "leg_base": ("Galvanised steel base plate ~120 x 120 x 6, drilled to the screw-head studs", 4, 8),
+    "leg_base": ("Galvanised steel flat plate 140 x 140 x 6, drilled to the screw-head studs", 4, 8),
 }
-# custom clevis bracket -> fork head on the member end + catalogue bracket drilled 8.2 mm as the lug
-CLEVIS_STD = ("Fork head DIN 71752 G8x16 stainless + M8 jam nut (into the tapped profile core), "
-              "lug = 3030 corner bracket drilled 8.2 mm", 4, 8)
 
 
-def build(bom, prof, standard):
+def build(bom, prof):
     rows_out = []
     for r in bom:
         cat, item, spec, q = r["category"], r["item"], r["spec"], r["qty"]
@@ -121,13 +115,10 @@ def build(bom, prof, standard):
             lo = q * (L * pm[0] + CUT_FEE[0])
             hi = q * (L * pm[1] + CUT_FEE[1])
             rows_out.append(("frame", item, f"{q} x {L * 1000:.0f} mm", q, lo, hi, "incl. cutting"))
-        elif cat == "plate" and standard and item in STANDARD:
+        elif cat == "plate" and item in STANDARD and ("catalogue" in spec or "galvanised" in spec):
             name, lo, hi = STANDARD[item]
-            rows_out.append(("frame", name, f"replaces custom {item}", q, q * lo, q * hi, "dowels match-drilled"))
-        elif cat == "bought" and standard and item.startswith("Clevis bracket"):
-            name, lo, hi = CLEVIS_STD
-            rows_out.append(("frame", name, "replaces custom clevis", q, q * lo, q * hi,
-                             "set length once, lock, paint-mark"))
+            rows_out.append(("frame", f"{name} [{item}]", spec.split(",")[0], q, q * lo, q * hi,
+                             "dowels match-drilled"))
         elif cat == "plate":
             w, h = map(float, re.search(r"envelope (\d+) x (\d+)", spec).groups())
             lo, hi = plate_price(w * h)
@@ -171,14 +162,15 @@ def main():
     with open(os.path.join(OUT, "bom.csv")) as f:
         bom = list(csv.DictReader(f))
     prof = next((r["item"].split()[0] for r in bom if r["category"] == "profile"), "3030")
-    a, ta = write(build(bom, prof, False), os.path.join(OUT, "cost_estimate.csv"))
-    b, tb = write(build(bom, prof, True), os.path.join(OUT, "cost_estimate_standard.csv"))
-    print(f"{'EUR':12s} {'custom plates':>15s} {'standard plates':>17s}")
+    a, ta = write(build(bom, prof), os.path.join(OUT, "cost_estimate.csv"))
+    print(f"{'EUR':12s} {'low':>7s} {'high':>7s}")
     for g in ORDER:
-        if a[g] != (0, 0) or b[g] != (0, 0):
-            print(f"{g:12s} {a[g][0]:7.0f}-{a[g][1]:<7.0f} {b[g][0]:9.0f}-{b[g][1]:<7.0f}")
-    print(f"{'TOTAL':12s} {ta[0]:7.0f}-{ta[1]:<7.0f} {tb[0]:9.0f}-{tb[1]:<7.0f}")
-    print(f"saving: {ta[0] - tb[0]:.0f}-{ta[1] - tb[1]:.0f} EUR")
+        if a[g] != (0, 0):
+            print(f"{g:12s} {a[g][0]:7.0f} {a[g][1]:7.0f}")
+    print(f"{'TOTAL':12s} {ta[0]:7.0f} {ta[1]:7.0f}")
+    unp = [r for r in build(bom, prof) if r[0] == "unpriced"]
+    if unp:
+        print("UNPRICED:", [r[1] for r in unp])
 
 
 if __name__ == "__main__":

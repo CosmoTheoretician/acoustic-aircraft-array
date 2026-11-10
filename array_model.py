@@ -118,6 +118,9 @@ class Model:
         self._section = None
         self.names = collections.Counter()
         self.checks = {}
+        self.std = p.plates == "standard"
+        self.jd = 30.0 if self.std else 20.0  # dowel distance from the profile end at splices / tees
+        self.lug_note = " (standard lugs: no pre-drilled hole, match-drill through the lug)" if self.std else ""
 
     # ------------------------------------------------------------------ basics
     def add(self, name, shape, colour):
@@ -182,7 +185,8 @@ class Model:
             a0 = A + u * i * (pl + gap)
             self.add(role, self.profile_solid(pl).moved(loc(a0, x, u)), colour)
             self.profiles.append(dict(role=role, length=round(pl, 1),
-                                      note=note + ("; spliced end(s): through-hole 20 mm from end" if n > 1 else "")))
+                                      note=note + (f"; spliced end(s): through-hole {self.jd:.0f} mm from end"
+                                                   if n > 1 else "")))
         for j in range(1, n):
             J = A + u * (j * pl + (j - 0.5) * gap)
             for sgn in (1, -1):
@@ -200,8 +204,9 @@ class Model:
     def plate(self, key, definition, origin, xdir, normal, colour=C_PLATE):
         """Place a flat plate. Plate local z = normal; plate occupies z in [0, t]."""
         if key not in self.plate_defs:
-            outline, holes, material = definition
+            outline, holes, material = definition[:3]
             self.plate_defs[key] = dict(outline=outline, holes=holes, material=material,
+                                        note=definition[3] if len(definition) > 3 else "",
                                         solid=self.make_plate_local(outline, holes, self.p.plate_thk))
         self.plate_count[key] += 1
         for (_, _, _, kind) in self.plate_defs[key]["holes"]:
@@ -224,6 +229,12 @@ class Model:
     def splice_def(self):
         P, h = self.P, self.p.splice_len / 2
         holes = []
+        if self.std:  # catalogue straight joining plate, ~120 x 30, holes on the slot line
+            for sgn in (1, -1):
+                holes += self.hole_row((sgn, 0), 1.0, (15, 30, 45), ("tbolt", "dowel", "tbolt"))
+            h = 61.0
+            return ([(-h, -P / 2), (h, -P / 2), (h, P / 2), (-h, P / 2)], holes,
+                    f"catalogue straight joining plate {self.p.profile}, ~{2 * h:.0f} x {P:.0f}", "match-drill the dowel holes in place with the jig (ream H7), then number the plate")
         for sgn in (1, -1):
             holes += self.hole_row((sgn, 0), 1.0, (20, 55, 95), ("dowel", "tbolt", "tbolt"))
         return ([(-h, -P / 2), (h, -P / 2), (h, P / 2), (-h, P / 2)], holes, "Al 5083/6082")
@@ -259,6 +270,19 @@ class Model:
         P, p = self.P, self.p
         H = 125 * P / 30
         holes = []
+        if self.std:  # catalogue cross (X) joining plate, turned 45 deg so its arms follow the diagonals
+            k = P / 30
+            offs = (P / 2 + 14, P / 2 + 14 + 18 * k, P / 2 + 14 + 36 * k)
+            R, w = offs[-1] + 12 * k, P / 2
+            for sx, sy in AP.CORNERS.values():
+                holes += self.hole_row((sx * S2, sy * S2), 0.0, offs, ("tbolt", "dowel", "tbolt"))
+            if top:
+                holes.append((0.0, 0.0, self.core_clear(), "core"))
+            plus = [(R, -w), (R, w), (w, w), (w, R), (-w, R), (-w, w), (-R, w), (-R, -w), (-w, -w), (-w, -R),
+                    (w, -R), (w, -w)]
+            outline = [tuple(map(float, rot2(q, math.pi / 4))) for q in plus]
+            return (outline, holes, f"catalogue cross joining plate {p.profile}, arms {2 * w:.0f} wide, ~{2 * R:.0f} tip to tip",
+                    "match-drill the dowel holes in place with the jig (ream H7), then number the plate")
         for sx, sy in AP.CORNERS.values():
             dr = (sx * S2, sy * S2)
             holes += self.hole_row(dr, p.hub_gap, (45, 75, 105), ("dowel", "tbolt", "tbolt"))
@@ -271,6 +295,15 @@ class Model:
     def tee_def(self):
         """Mid-side node plate. Local x = outward, y = along the side. Same part on all 4 sides."""
         P = self.P
+        if self.std:  # catalogue T joining plate
+            w, Ly, xs = P / 2, 1.5 + 60, P / 2 + 5 + 60
+            outline = [(-w, -Ly), (w, -Ly), (w, -w), (xs, -w), (xs, w), (w, w), (w, Ly), (-w, Ly)]
+            holes = []
+            for sgn in (1, -1):
+                holes += self.hole_row((0, sgn), 1.5, (15, 30, 45), ("tbolt", "dowel", "tbolt"))
+            holes += self.hole_row((1, 0), P / 2 + 5, (20, 45), ("dowel", "tbolt"))
+            return (outline, holes, f"catalogue T joining plate {self.p.profile}, ~{xs + w:.0f} x {2 * Ly:.0f}",
+                    "match-drill the dowel holes in place with the jig (ream H7), then number the plate")
         w = P / 2 + 10
         Ly = 1.5 + 115
         xs = P / 2 + 5 + 80
@@ -288,13 +321,32 @@ class Model:
         holes = [(0.0, 0.0, self.core_clear(), "core")]
         holes += [(P / 2 + 14, 0.0, self.pr["clear"], "thru"), (-(P / 2 + 14), 0.0, self.pr["clear"], "thru")]
         holes += [(sx * 52, sy * 52, 11.0, "stud") for sx in (1, -1) for sy in (1, -1)]
+        if self.std:
+            return ([(-h, -h), (h, -h), (h, h), (-h, h)], holes,
+                    "galvanised steel flat plate (S235), drilled per DXF", "no dowels: levelling studs set the height")
         return ([(-h, -h), (h, -h), (h, h), (-h, h)], holes, "Al 5083/6082")
 
     # ------------------------------------------------------------------ hardware shapes
     def clevis(self, origin, xdir, normal, narrow=False):
         """Clevis bracket; local z = away from mounting face, local x in the brace plane,
-        local y = pin axis. Pin at local (0, 0, pin_offset)."""
+        local y = pin axis. Pin at local (0, 0, pin_offset).
+        Standard style: a 60 mm piece of Al T-section 50x50x5 (stock): flange bolted along the slot
+        (2 T-bolts at +-15 + a match-drilled dowel at 24), web trimmed to 18 mm carries the pin;
+        the fork head on the brace straddles the web with a nylon washer each side."""
         P, po = self.P, self.p.pin_offset
+        if self.std:
+            s = box(-30, 30, -25, 25, 0, 5).fuse(box(-9, 9, -2.5, 2.5, 5, po + 16))
+            for hx in (-15, 15):
+                s = s.cut(cyl(self.pr["clear"] / 2, 7, (hx, 0, -1), (0, 0, 1)))
+            s = s.cut(cyl(4.1, 10, (0, -5, po), (0, 1, 0)))
+            L = loc(origin, xdir, normal)
+            self.add("pin_lug", s.moved(L), C_STEEL)
+            self.add("clevis_pin", cyl(4, 26, (0, -13, po), (0, 1, 0)).moved(L), C_STEEL)
+            self.buy[f"Al T-section 50x50x5 stock, 60 mm pieces (web trimmed to 18 mm, 8.2 mm pin hole at "
+                     f"{po:.0f} mm, 2 x {self.pr['clear']:.1f} + 1 dowel hole) — pin lug"] += 1
+            self.hw["Clevis pin 8 x 24 mm DIN 1444, A4 + R-clip"] += 1
+            self.hw["Nylon washer 8.4 x 16 x 1.5 (fork-head spacer)"] += 2
+            return
         w = P / 2 + (0 if narrow else 8)
         s = box(-25, 25, -w, w, 0, 5)
         for sg in (1, -1):
@@ -305,6 +357,29 @@ class Model:
         self.add("clevis_pin", cyl(4, P + 18, (0, -(P + 18) / 2, po), (0, 1, 0)).moved(L), C_STEEL)
         self.buy[f"Clevis bracket for {self.p.profile}, 8 mm pin (custom bent 4 mm stainless or Al, see model)"] += 1
         self.hw[f"Clevis pin 8 x {P + 20:.0f} mm DIN 1444, A4 + R-clip"] += 1
+
+    def fork_head(self, pin, u, axis):
+        """DIN 71752 G8x16 fork head, pin at `pin`, shank pointing along u, pin axis = axis."""
+        s = box(-10, 22, -8, 8, -8, 8).cut(box(-11, 14, -9, 9, -4.2, 4.2))
+        s = s.fuse(cyl(4, 12, (22, 0, 0), (1, 0, 0))).fuse(cyl(7.5, 6.5, (32, 0, 0), (1, 0, 0)))
+        self.add("fork_head", s.moved(loc(pin, u, axis)), C_STEEL)
+        self.buy["Fork head DIN 71752 G8x16, stainless (A4) (pin: see clevis pins)"] += 1
+        self.hw["M8 jam nut DIN 439, A4"] += 1
+
+    def brace(self, role, A, B, axis):
+        """Pinned member from pin A to pin B; axis = pin axis (normal to the brace plane)."""
+        u = nrm(B - A)
+        pp = np.linalg.norm(B - A)
+        if self.std:
+            e = self.p.fork_pin_to_end
+            self.member(role, A + u * e, B - u * e, axis,
+                        note=f"tap core {self.pr['core_tap']} both ends for fork heads; pin-to-pin {pp:.1f} mm: "
+                             f"set once on the jig, lock the jam nuts, paint-mark the threads")
+            self.fork_head(A, u, axis)
+            self.fork_head(B, -u, axis)
+        else:
+            self.member(role, A - u * 15, B + u * 15, axis,
+                        note=f"8 mm H8 cross-holes 15 mm from each end (pin-to-pin {pp:.1f} mm)")
 
     def angle_bracket(self, origin, xdir, normal, count_bolts=True):
         """Standard corner bracket; local x along the horizontal leg, local z along vertical leg."""
@@ -474,7 +549,9 @@ class Model:
             C = V(sx * a, sy * a, zc)
             perp = np.cross(Z, d)
             self.member("arm", d * p.hub_gap + V(0, 0, zc), C - d * p.end_gap_node, perp,
-                        note="H7 through-hole 20 mm from outer end, 45 mm from hub end")
+                        note=f"H7 through-hole 20 mm from outer end, "
+                             f"{(self.P / 2 + 14 + 18 * self.P / 30 if self.std else p.hub_gap + 45) - p.hub_gap:.0f} "
+                             f"mm from hub end")
             self.member("outrigger", C + d * out_inner, C + d * (p.outrigger + p.outrigger_tail), perp,
                         note=f"H7 through-holes 20 mm from inner end and {p.outrigger - out_inner:.0f} mm "
                              f"(mic holder dowel)")
@@ -482,8 +559,9 @@ class Model:
             for e in sides:
                 M = C + e * a
                 self.member("side_half", C + e * p.end_gap_node, M - e * 1.5, np.cross(Z, e),
-                            note=f"H7 through-holes 20 mm from each end and {p.knee - p.end_gap_node:.0f} mm "
-                                 f"from the corner end (knee-brace clevis, underside)")
+                            note=f"H7 through-holes 20 mm from the corner end, {self.jd:.0f} mm from the mid end, "
+                                 f"and {p.knee - p.end_gap_node:.0f} mm "
+                                 f"from the corner end (knee-brace clevis, underside){self.lug_note}")
             ang = math.radians(corner_ang[name])
             gx = V(math.cos(ang), math.sin(ang), 0)
             self.plate("corner_gusset", self.gusset_def(), V(C[0], C[1], g.z1), gx, Z)
@@ -492,7 +570,7 @@ class Model:
             # ---- leg, knee braces, ground screw ----
             self.member("leg", V(C[0], C[1], g.leg_bottom), V(C[0], C[1], g.leg_top), V(1, 0, 0),
                         note=f"tap core {self.pr['core_tap']} both ends; H7 through-holes at "
-                             f"{g.leg_top - p.knee - g.leg_bottom:.0f} mm from the foot (knee clevises, 2 faces)")
+                             f"{g.leg_top - p.knee - g.leg_bottom:.0f} mm from the foot (knee clevises, 2 faces){self.lug_note}")
             self.hw_core(2, "leg -> gusset / base plate")
             for e in (V(sx, 0, 0), V(0, sy, 0)):  # leg-top brackets on the outer faces (holes in gusset)
                 self.angle_bracket(V(C[0], C[1], g.leg_top) + e * (P / 2), e, -Z, count_bolts=False)
@@ -514,9 +592,7 @@ class Model:
                 self.hw_tbolt(2)
                 A = o_leg + e * p.pin_offset
                 B = o_side - Z * p.pin_offset
-                u = nrm(B - A)
-                self.member("knee_brace", A - u * 15, B + u * 15, np.cross(Z, e),
-                            note=f"8 mm H8 cross-holes 15 mm from each end (pin-to-pin {np.linalg.norm(B - A):.1f} mm)")
+                self.brace("knee_brace", A, B, np.cross(Z, e))
 
             # ---- strut ----
             stag = 0.0 if idx % 2 == 0 else 50.0
@@ -528,10 +604,7 @@ class Model:
             self.hw_dowel(1)
             self.hw_tbolt(2)
             Bpin = top_o + d * p.pin_offset
-            u = nrm(Bpin - Apin)
-            self.member(f"strut_{'A' if stag == 0 else 'B'}", Apin - u * 15, Bpin + u * 15, perp,
-                        note="8 mm H8 cross-holes for clevis pins 15 mm from each end (pin-to-pin "
-                             f"{np.linalg.norm(Bpin - Apin):.1f} mm)")
+            self.brace(f"strut_{'A' if stag == 0 else 'B'}", Apin, Bpin, perp)
 
             # ---- base mic on the outrigger end ----
             mic_org = V(C[0], C[1], g.z1) + d * p.outrigger
@@ -552,7 +625,7 @@ class Model:
         xm = nrm(V(1, 1, 0))
         self.member("mast", V(0, 0, g.mast_base), V(0, 0, g.mast_top), xm,
                     note=f"tap core {self.pr['core_tap']} both ends; H7 dowel holes at clevis heights "
-                         f"{g.z_strut_top - g.mast_base:.0f} and {g.z_strut_top - 50 - g.mast_base:.0f} mm from foot")
+                         f"{g.z_strut_top - g.mast_base:.0f} and {g.z_strut_top - 50 - g.mast_base:.0f} mm from foot{self.lug_note}")
         self.hw_core(1, "mast -> hub")
         for sx, sy in AP.CORNERS.values():
             d = V(sx * S2, sy * S2, 0)
@@ -773,7 +846,8 @@ class Model:
             nd = sum(1 for h in pdef["holes"] if h[3] == "dowel")
             rows.append(("plate", key, f"{pdef['material']}, t={p.plate_thk:.0f} mm, envelope {ext[0]:.0f} x "
                                        f"{ext[1]:.0f} mm, DXF plates/{key}.dxf", q,
-                         f"{nd} dowel holes {self.pr['dowel']:.0f} H7 (ream), other holes per DXF"))
+                         (pdef["note"] + "; " if pdef["note"] else "")
+                         + f"{nd} dowel holes {self.pr['dowel']:.0f} H7 (ream), other holes per DXF"))
         for k, q in self.buy.items():
             rows.append(("bought", k, "", q, ""))
         for k, q in sorted(self.hw.items()):

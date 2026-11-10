@@ -7,7 +7,7 @@
     "z": "up",
     "units": "m"
   },
-  "params_hash": "7b3ac1abdfcc",
+  "params_hash": "f17e48648cb4",
   "params": {
     "square_side": 2000.0,
     "apex_rise": 1400.0,
@@ -15,6 +15,8 @@
     "profile": "3030",
     "max_piece": 1200.0,
     "plate_thk": 6.0,
+    "plates": "standard",
+    "fork_pin_to_end": 40.0,
     "outrigger": 450.0,
     "outrigger_tail": 40.0,
     "end_gap_node": 70.0,
