@@ -76,7 +76,8 @@ The renders need `openscad` on your PATH. Every other step runs on Python alone.
 - **Electronics box:** hangs on the outward face of the SW leg, 0.93 m from the nearest mic and reachable from the ground. All cables run in armoured, marten-proof conduit.
 - **Pole:** a 48.3 mm tube on its own ground screw, clamped to a stand-off post on the west side, 0.95 m from the nearest mic.
   - The ultrasonic wind sensor sits on top, about 1 m above the apex mic. It has no moving parts, so it adds no mechanical noise.
-  - The Wi-Fi bridge and sky camera clamp lower down the pole.
+  - A TP-Link CPE210 Wi-Fi bridge sits 4 m up the pole and faces true south, the same way as the solar panels (`cpe_azimuth`). It is strapped to the pole over a printed ASA saddle (`out/stl/cpe_pole_saddle.stl`). The saddle's side lips key the CPE so it can't twist, and a notch on top marks the boresight. Its 65° beam is wide, so re-aiming by the mark is precise enough.
+  - The sky camera clamps lower down the pole.
 - **Solar:** two ~200 W panels face true south at a 60° tilt, on a separate ground stand 3 m south of the array.
   - **Why 60°:** for spring-to-autumn use, this tilt gives the best yield in the worst months (March and October).
   - **Why a separate stand:** mounted on the array, 2 m² of panel would act as a sail that rocks the frame and moves the mics. It would also be a large reflector right next to the capsules.
@@ -148,6 +149,7 @@ All errors are medians.
 
 ## Assumptions and open items
 
+- **CPE210 dimensions** (224 × 79 × 60 mm) are datasheet values. Check them against your unit before printing the saddle.
 - **ECM8000 dimensions** come from retailer listings and are unverified: about 21–22 mm body diameter, 190–197 mm length and a 12.7 mm tip. The nose taper length is estimated. Measure your mics with calipers and set `mic_*` in `array_params.py`.
 - **Runway data** (ELLX thresholds, elevations and courses) are from OurAirports. Check them against the current AIP before trusting the absolute results.
 - **The real lawn reflection** is frequency-dependent and has to be learned on site. The tracker learns it from loud passes.

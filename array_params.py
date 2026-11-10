@@ -92,6 +92,8 @@ class Params:
     pole_len: float = 4600.0  # pole top above ground
     post_len: float = 600.0
     wind_sensor: tuple = (142.0, 160.0)  # ultrasonic 2D anemometer body diameter x height
+    cpe_size: tuple = (224.0, 79.0, 60.0)  # TP-Link CPE210 H x W x D (datasheet values — MEASURE YOURS)
+    cpe_azimuth: float = 180.0  # boresight, degrees from true north; 180 = same as the solar panels
 
 
 PROFILES = {

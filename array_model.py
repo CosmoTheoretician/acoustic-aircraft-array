@@ -33,7 +33,8 @@ Design notes (why it is built this way):
   the stand, so it never shades it; the stand is low (top edge below the mics), and its glass
   faces away from the array, so sound reflected off it goes up and south, away from the mics.
 - Wind sensor (ultrasonic: no moving parts, so no mechanical noise near the mics) on a
-  pole on the west mid-side, ~0.9 m above the apex mic, with the Wi-Fi bridge and camera.
+  pole on the west mid-side, ~0.9 m above the apex mic, with the camera and a TP-Link CPE210
+  Wi-Fi bridge pointing the same way as the solar panels (true south), on a printed saddle.
 """
 
 import argparse
@@ -368,6 +369,27 @@ class Model:
         s = s.cut(cyl(self.pr["clear"] / 2, 30, (0, 0, -1), (0, 0, 1)))
         return s.cut(cyl(6.5, 20, (0, 0, 9), (0, 0, 1)))
 
+    def cpe_saddle_shape(self):
+        """Printed saddle between the 48.3 mm pole and the CPE210's back.
+        Frame: z = pointing direction (out of the pole), y = up, x = across.
+        Pole axis along y at z = -r_pole; the CPE back sits on z = 0 between two side lips.
+        The CPE210's own pole strap (or a 12 mm stainless hose clamp) goes round the pole,
+        through the two strap slots and the CPE's strap mount, clamping all three together.
+        Print on its side (x down): no overhangs in the pole cut, lips along the layers."""
+        p = self.p
+        rp = p.pole_d / 2
+        h, w, _ = p.cpe_size
+        hs = min(120.0, h * 0.55) / 2  # saddle height
+        wl = w / 2 + 0.5  # lip inner face
+        s = box(-wl - 4, wl + 4, -hs, hs, -rp * 0.75, 0)
+        s = s.cut(cyl(rp + 0.4, 2 * hs + 2, (0, -hs - 1, -rp), (0, 1, 0)))
+        for sx in (1, -1):  # side lips that key the CPE body, so it can't twist on the pole
+            s = s.fuse(box(min(sx * wl, sx * (wl + 4)), max(sx * wl, sx * (wl + 4)), -hs, hs, 0, 18))
+        for sy in (1, -1):  # strap slots, 14 x 3 mm, right through, just behind the CPE face
+            s = s.cut(box(-wl - 6, wl + 6, sy * hs * 0.55 - 7, sy * hs * 0.55 + 7, -6, -3))
+        # pointing mark: a V-notch on the top face, on the boresight line
+        return s.cut(box(-1, 1, hs - 3, hs + 1, -rp * 0.75 - 1, 1))
+
     def holder_shape(self, base):
         """Mic holder, frame: z up, z=0 = mounting surface (outrigger top or mast top).
         base='socket': square socket over the mast end, core bolt through the floor.
@@ -606,9 +628,20 @@ class Model:
             self.buy[f"Ultrasonic 2D wind sensor (e.g. Gill WindSonic class), ~{sd:.0f} mm, pole-top mount"] += 1
             # Wi-Fi bridge dish and sky camera placeholders, below the sensor
             zc_ = p.pole_len - 600
-            self.add("wifi_bridge", cyl(110, 60, pc + n * (p.pole_d / 2 + 20) + Z * zc_, n), C_SENSOR)
+            # TP-Link CPE210 pointing the same way as the solar panels (true south by default)
+            az = math.radians(p.cpe_azimuth)
+            f = V(math.sin(az), math.cos(az), 0)  # boresight, horizontal
+            xd = np.cross(Z, f)
+            ch, cw, cdp = p.cpe_size
+            o = pc + f * (p.pole_d / 2) + Z * zc_  # saddle front face (CPE back) on the boresight line
+            L = loc(o, xd, f)
+            self.add("cpe_pole_saddle", self.cpe_saddle_shape().moved(L), C_PRINT)
+            self.printed["cpe_pole_saddle"] += 1
+            self.add("wifi_bridge_cpe210", box(-cw / 2, cw / 2, -ch / 2, ch / 2, 0, cdp).moved(L), C_SENSOR)
+            self.buy["TP-Link CPE210 (2.4 GHz, 9 dBi, 65 deg H / 35 deg V beam) + its pole strap"] += 1
+            self.buy["Hose clamp 12 mm W4 stainless, 40-70 mm (spare strap for the CPE saddle)"] += 1
+            self.checks["cpe_boresight_azimuth_deg"] = float(math.degrees(math.atan2(f[0], f[1])) % 360)
             self.add("sky_camera", cyl(35, 90, pc - n * (p.pole_d / 2 + 50) + Z * (zc_ + 250), Z), C_SENSOR)
-            self.buy["Point-to-point Wi-Fi bridge + pole bracket (user supplied)"] += 1
             self.buy["Sky camera + pole bracket (user supplied)"] += 1
             self.pole_xy = pc[:2]
             self.sensor_z = p.pole_len + sh / 2
@@ -706,6 +739,7 @@ class Model:
             "iso_sleeve_tpu": self.sleeve_shape(V(0, 0, 0), (0, 0, 1)),
             "index_collar": self.collar_shape(),
             "cable_clip": self.clip_shape(),
+            "cpe_pole_saddle": self.cpe_saddle_shape(),
         }
         for k, s in out.items():
             cq.exporters.export(cq.Workplane().add(s), os.path.join(d, f"{k}.stl"), tolerance=0.02, angularTolerance=0.1)
@@ -748,7 +782,8 @@ class Model:
         mats = {"mic_holder_flange": "ASA, 5 walls, 50 % infill, print flange-down",
                 "mic_holder_socket": "ASA, 5 walls, 50 % infill, print socket-up",
                 "iso_sleeve_tpu": "TPU 85A-95A (or cut from EPDM tube 22x28 mm)",
-                "index_collar": "ASA or PETG", "cable_clip": "ASA/PETG (TPU also works)"}
+                "index_collar": "ASA or PETG", "cable_clip": "ASA/PETG (TPU also works)",
+                "cpe_pole_saddle": "ASA, 4 walls, 40 % infill, print on its side"}
         for k, q in self.printed.items():
             rows.append(("printed", k, mats.get(k, ""), q, f"stl/{k}.stl"))
         nm = 5 + int(p.mic6)
@@ -776,7 +811,7 @@ class Model:
         return files
 
 
-def render(files, outdir, g, p):
+def render(files, outdir, g, p, pole=None):
     exe = shutil.which("openscad")
     if not exe:
         print("openscad not found; skipping renders")
@@ -803,6 +838,8 @@ def render(files, outdir, g, p):
         "apex_closeup": (f"900,-1200,{g.z_apex + 250:.0f},0,0,{g.mast_top + 60:.0f}", "1000,1300", "p"),
     }
     out = []
+    if pole is not None:
+        views["cpe_closeup"] = (f"{pole[0] + 900:.0f},{pole[1] - 1300:.0f},{p.pole_len - 200:.0f},{pole[0]:.0f},{pole[1] - 60:.0f},{p.pole_len - 600:.0f}", "1000,1000", "p")
     for name, (cam, size, proj) in views.items():
         png = os.path.join(outdir, f"{name}.png")
         cmd = [exe, "-o", png, f"--imgsize={size}", f"--camera={cam}", "--colorscheme=Tomorrow",
@@ -865,7 +902,7 @@ def main():
         print(f"check {k}: {v:.1f}")
     if not args.no_render:
         files = m.export_render_meshes(os.path.join(OUT, "render", "mesh"))
-        pngs = render(files, os.path.join(OUT, "render"), g, p)
+        pngs = render(files, os.path.join(OUT, "render"), g, p, getattr(m, "pole_xy", None))
         print("renders:", [os.path.basename(x) for x in pngs])
 
 

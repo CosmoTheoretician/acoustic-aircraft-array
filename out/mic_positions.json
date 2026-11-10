@@ -7,7 +7,7 @@
     "z": "up",
     "units": "m"
   },
-  "params_hash": "72acc96d1e02",
+  "params_hash": "7b3ac1abdfcc",
   "params": {
     "square_side": 2000.0,
     "apex_rise": 1400.0,
@@ -69,7 +69,13 @@
     "wind_sensor": [
       142.0,
       160.0
-    ]
+    ],
+    "cpe_size": [
+      224.0,
+      79.0,
+      60.0
+    ],
+    "cpe_azimuth": 180.0
   },
   "mics": [
     {
